@@ -1,0 +1,60 @@
+# Python-specific
+__pycache__/
+*.pyc
+*.pyd
+.mypy_cache/
+.dmypy_cache/
+.ruff_cache/
+.pytest_cache/
+cover/
+htmlcov/
+.coverage
+sdist/
+dist/
+build/
+eggs/
+*.egg-info/
+wheelhouse/
+.tox/
+.nox/
+.flake8
+.isort.cfg
+.pylintrc
+.editorconfig.local
+*.orig
+*.rej
+.DS_Store  # macOS specific
+.AppleDouble
+.LSOverride
+
+# Environment variables
+.env
+.env.*
+!*.env.example  # Include example .env files
+
+# Virtual environment (common names)
+venv/
+.venv/
+env/
+envs/
+ENV/
+pyvenv.cfg
+
+# Log files (if any)
+*.log
+
+# Temporary files and directories
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+.idea/       # PyCharm specific (optional, if you use it)
+.vscode/     # VS Code specific (optional, if you use it)
+
+# Bot specific (adjust as needed)
+bot.session  # If you're using Aiogram's FSM and storing state in a file
+# any_other_temporary_bot_files/
+
+# OS-specific Thumbs.db
+Thumbs.db
