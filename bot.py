@@ -4,6 +4,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from urllib.parse import urlparse, urlunparse
 import subprocess
 import json
+import aiohttp
 import asyncio
 import argparse
 
@@ -31,6 +32,16 @@ def normalize_url(url: str) -> str | None:
     else:
         # Handle other schemes or invalid cases as needed
         return None
+        
+async def is_valid_image_url(url: str) -> bool:
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.head(url, allow_redirects=True, timeout=5) as response:  # Added timeout
+                return response.status == 200 and response.headers.get('Content-Type', '').startswith('image/')
+    except aiohttp.ClientError:
+        return False
+    except asyncio.TimeoutError:
+        return False
 
 @dp.message(CommandStart())
 async def cmd_start(msg: types.Message) -> None:
@@ -88,25 +99,29 @@ async def cmd_search(message: types.Message) -> None:
 
                         if thumbnail_url:
                             valid_thumbnail_url = normalize_url(thumbnail_url)
-                            if valid_thumbnail_url:
-                                await bot.send_photo(
-                                    message.chat.id,
-                                    valid_thumbnail_url,
-                                    caption=title,
-                                    reply_markup=markup,
-                                )
+                            if valid_thumbnail_url and await is_valid_image_url(valid_thumbnail_url):
+                                try:
+                                    await bot.send_photo(
+                                        message.chat.id,
+                                        valid_thumbnail_url,
+                                        caption=title,
+                                        reply_markup=markup,
+                                    )
+                                except Exception as e:
+                                    print(f"Error sending photo: {e}")
+                                    # Don't send anything to the user in case of error
                             else:
                                 await message.answer(
-                                    f"[{title}]({url})",
+                                    f"[{title}]({url})\n(Invalid thumbnail URL)",
                                     parse_mode="Markdown",
                                     reply_markup=markup,
-                                )  # Send link if thumbnail is invalid
+                                )
                         else:
                             await message.answer(
-                                f"[{title}]({url})",
+                                f"[{title}]({url})\n(No thumbnail available)",
                                 parse_mode="Markdown",
                                 reply_markup=markup,
-                            )  # Send link if no thumbnail
+                            )
                         found_results = True
                 except json.JSONDecodeError:
                     print(f"Could not decode JSON: {line}")
